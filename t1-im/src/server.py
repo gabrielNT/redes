@@ -1,7 +1,9 @@
 import sys
 import socket
 import select
+import cPickle as pickle
 from user import User
+from message import Message
 
 HOST_ADDRESS = ''
 PORT = 8003
@@ -31,13 +33,44 @@ def messenger_server():
             # open a new connection
             if sock == server_socket:
                 new_socket, new_socket_address = server_socket.accept()
+                # TODO: Check if name already exists
                 username = new_socket.recv(RCV_BUFFER_SIZE)
-                SOCKET_LIST.append(new_socket)
+                # Create a new user and put the data in the lists
                 new_user = User(username, new_socket)
                 USER_LIST.append(new_user)
-
+                SOCKET_LIST.append(new_socket)
                 print "User " + new_user.name + " on (%s, %s) connected" % new_socket_address
 
+            else:
+               try:
+                    serial_msg = sock.recv(RCV_BUFFER_SIZE)
+                    if serial_msg:
+                        msg = pickle.loads(serial_msg)
+                        cast(msg)
+                    else:
+                        # TODO: Check what else to remove
+                        #if sock in SOCKET_LIST:
+                        SOCKET_LIST.remove(sock)
+               except:
+                   continue
+
+def cast(msg):
+    receiver_counter = 0
+
+    for receiver in msg.receiver:
+        for user in USER_LIST:
+            if receiver == user.name:
+                receiver_counter += 1
+                try:
+                    user.socket.send(msg.message)
+                except:
+                    # The connection should be broken
+                    user.socket.close()
+                    SOCKET_LIST.remove(user.socket)
+                    USER_LIST.remove(user)
+
+    if receiver_counter != len(msg.receiver):
+        print "Only " + receiver_counter + "of " + len(msg.receiver) + "was found"
 
 
 if __name__ == "__main__":
