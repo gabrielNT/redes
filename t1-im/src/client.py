@@ -51,6 +51,13 @@ class Client:
     def setRcvList(self, rcv_list):
         self.rcv_list = rcv_list
 
+    def getUserList(self):
+        return self.user_list
+
+    def setUserList(self, user_list):
+        self.user_list = user_list
+
+    user_list = property(getUserList, setUserList)
     rcv_list = property(getRcvList, setRcvList)
 
 def send_msg_thread(sock, username, client):
@@ -71,13 +78,16 @@ def recv_msg_thread(sock, client):
                 if data:
                     # Operation 0 = send message
                     if data[0] == '0':
-                        print "Receiving Message" + data[1:]
+                        print "Receiving Message " + data[1:]
                         client.rcv_list.append(data[1:])
                     # Operation 1 = update user_list
                     elif data[0] == '1':
                         print "Receiving user_list"
                         client.user_list = []
-                        client.user_list.append(data[1:])
+                        temp_string = data[1:]
+                        client.user_list = temp_string.split(",")
+                        for i in client.user_list:
+                            print i
                     else:
                         print "Operation not recognized."
                         continue

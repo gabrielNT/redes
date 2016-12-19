@@ -2,6 +2,7 @@ import sys
 import socket
 import select
 import cPickle as pickle
+import time
 from user import User
 from message import Message
 
@@ -9,6 +10,7 @@ HOST_ADDRESS = ''
 PORT = 8003
 RCV_BUFFER_SIZE = 4096
 SOCKET_LIST = []
+i_counter = 0
 
 class Server:
     def __init__(self):
@@ -30,13 +32,17 @@ class Server:
             # Uses the Unix call to select, checking which sockets are ready to be read, written or have pending conditions
             # The timeout argument is 0, so the operation is non-blocking
             readable_sockets, writeable_sockets, error_sockets = select.select(SOCKET_LIST, [], [], 0)
+            global i_counter
+            i_counter += 1
+            if i_counter % 99999 == 0:
+                self.broadcast_user_list(server_socket)
+                i_counter = 0
 
             for sock in readable_sockets:
                 # If the readable socket is the server_socket itself, it must be trying to
                 # open a new connection
                 if sock == server_socket:
                     new_socket, new_socket_address = server_socket.accept()
-                    self.broadcast_user_list(server_socket)
                     username = new_socket.recv(RCV_BUFFER_SIZE)
 
                     # Check if username is valid
