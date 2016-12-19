@@ -36,14 +36,25 @@ class Server:
                 # open a new connection
                 if sock == server_socket:
                     new_socket, new_socket_address = server_socket.accept()
-                    # TODO: Check if name already exists
-                    username = new_socket.recv(RCV_BUFFER_SIZE)
-                    # Create a new user and put the data in the lists
-                    new_user = User(username, new_socket)
-                    self.user_list.append(new_user)
-                    SOCKET_LIST.append(new_socket)
-                    print "User " + new_user.name + " on (%s, %s) connected" % new_socket_address
                     self.broadcast_user_list(server_socket)
+                    username = new_socket.recv(RCV_BUFFER_SIZE)
+
+                    # Check if username is valid
+                    if self.check_username(username) == 1:
+                        # Create a new user and put the data in the lists
+                        new_user = User(username, new_socket)
+                        self.user_list.append(new_user)
+                        SOCKET_LIST.append(new_socket)
+                        print "User " + new_user.name + " on (%s, %s) connected" % new_socket_address
+                        self.broadcast_user_list(server_socket)
+                    else:
+                        if self.check_username(username) == 0:
+                            print "Username not alphanumeric " + username
+                            new_socket.send("2")
+                        else:
+                            print "Username already in use: " + username
+                            new_socket.send("3")
+                        new_socket.close()
                 else:
                    try:
                         serial_msg = sock.recv(RCV_BUFFER_SIZE)
@@ -83,6 +94,7 @@ class Server:
         if receiver_counter != len(msg.receiver):
             print "Only " + str(receiver_counter) + " of " + str(len(msg.receiver)) + "was found"
 
+    # Broadcast user_list to all clients
     def broadcast_user_list(self, server_socket):
         names = self.get_user_list_names()
 
@@ -100,24 +112,24 @@ class Server:
                             print "User " + user_to_delete.name + " disconnected"
                     self.broadcast_user_list(server_socket)
 
+    def check_username(self, username):
+        # 0 if format is wrong, -1 if already exists, 1 if valid
+        validity = 0
+        if username.isalnum():
+            validity = 1
+            for user in self.user_list:
+                if user.name == username:
+                    validity = -1
+                    break
+
+        return validity
+
     def get_user_list_names(self):
         new_string = "1"
         for user in self.user_list:
             new_string += user.name
             new_string += ","
         return new_string
-
-    def check_username(self, username):
-        # 0 if format is wrong, -1 if already exists, 1 if valid
-        validity = 0
-        if username.isalnum():
-            for user in self.user_list:
-                if user.name == username:
-                    validity = -1
-                    break
-            validity = 1
-
-        return validity
 
     def getUserList(self):
         return self.user_list

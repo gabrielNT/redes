@@ -25,6 +25,13 @@ class Client:
         try:
             client_socket.connect((host_address, port))
             client_socket.send(username)
+            code = client_socket.recv(RCV_BUFFER_SIZE)
+            if code == "2":
+                print 'Username not alphanumeric'
+                sys.exit()
+            elif code == "3":
+                print 'Username already in use'
+                sys.exit()
         except:
             print 'Unable to establish connection'
             sys.exit()
