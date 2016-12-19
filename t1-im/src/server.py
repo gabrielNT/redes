@@ -9,7 +9,6 @@ HOST_ADDRESS = ''
 PORT = 8003
 RCV_BUFFER_SIZE = 4096
 SOCKET_LIST = []
-CLIENT_RECEIVER = "NOT085NOME"
 
 class Server:
     def __init__(self):
@@ -44,26 +43,25 @@ class Server:
                     self.user_list.append(new_user)
                     SOCKET_LIST.append(new_socket)
                     print "User " + new_user.name + " on (%s, %s) connected" % new_socket_address
-
+                    self.broadcast_user_list(server_socket)
                 else:
                    try:
                         serial_msg = sock.recv(RCV_BUFFER_SIZE)
                         if serial_msg:
                             msg = pickle.loads(serial_msg)
-                            if msg.receiver ==
-                            self.cast(msg)
+                            self.cast(msg, server_socket)
                         else:
-                            # TODO: Check what else to remove
-                            #if sock in SOCKET_LIST:
+                            sock.close()
                             SOCKET_LIST.remove(sock)
                             for user_to_delete in self.user_list:
                                 if sock == user_to_delete.socket:
                                     self.user_list.remove(user_to_delete)
                                     print "User " + user_to_delete.name + " disconnected"
+                            self.broadcast_user_list(server_socket)
                    except:
                        continue
 
-    def cast(self, msg):
+    def cast(self, msg, server_socket):
         receiver_counter = 0
 
         for receiver in msg.receiver:
@@ -71,17 +69,55 @@ class Server:
                 if receiver == user.name:
                     receiver_counter += 1
                     try:
-                        print "Sending message"
-                        user.socket.send(msg.message)
+                        data = "0[" + msg.sender + "]" + msg.message
+                        print "Sending message " + data
+                        user.socket.send(data)
                     except:
                         # The connection should be broken
                         user.socket.close()
                         SOCKET_LIST.remove(user.socket)
                         self.user_list.remove(user)
                         print "User " + user.name + " disconnected"
+                        self.broadcast_user_list(server_socket)
 
         if receiver_counter != len(msg.receiver):
             print "Only " + str(receiver_counter) + " of " + str(len(msg.receiver)) + "was found"
+
+    def broadcast_user_list(self, server_socket):
+        names = self.get_user_list_names()
+
+        print "Sending user_list " + names
+        for sock in SOCKET_LIST:
+            if sock != server_socket:
+                try:
+                    sock.send(names)
+                except:
+                    # The connection should be broken
+                    sock.close()
+                    for user_to_delete in self.user_list:
+                        if sock == user_to_delete.socket:
+                            self.user_list.remove(user_to_delete)
+                            print "User " + user_to_delete.name + " disconnected"
+                    self.broadcast_user_list(server_socket)
+
+    def get_user_list_names(self):
+        new_string = "1"
+        for user in self.user_list:
+            new_string += user.name
+            new_string += ","
+        return new_string
+
+    def check_username(self, username):
+        # 0 if format is wrong, -1 if already exists, 1 if valid
+        validity = 0
+        if username.isalnum():
+            for user in self.user_list:
+                if user.name == username:
+                    validity = -1
+                    break
+            validity = 1
+
+        return validity
 
     def getUserList(self):
         return self.user_list

@@ -1,0 +1,87 @@
+<Login>:
+    BoxLayout:
+        orientation:"vertical"
+        BoxLayout:
+            size_hint_y: 7
+            Label:
+                text: "Entre com o nome de usuario desejado:"
+        BoxLayout:
+            size_hint_y: 0.4
+            TextInput:
+                id: login
+                multiline: False
+                size_hint_x: 7
+            Button:
+                text: "Entrar"
+                size_hint_x: 3
+                on_press: root.sucess(login.text)
+
+<Connected>:
+    BoxLayout:
+        orientation: "vertical"
+        BoxLayout:
+            size_hint_y: 90
+            TextInput:
+                id: log
+                readonly: True
+                size_hint_x: 4
+            BoxLayout:
+                orientation: "vertical"
+                Label:
+                    text: "Lista Usuarios online"
+                    size_hint_y: 1
+                Button:
+                    id: User1
+                    background_color: (0.0, 0.0, 0.0, 0.0)
+                    on_press: root.disconnect()
+                    size_hint_y: 1
+                Button:
+                    id: User2
+                    background_color: (0.0, 0.0, 0.0, 0.0)
+                    on_press: root.disconnect()
+                    size_hint_y: 1
+                Button:
+                    id: User3
+                    background_color: (0.0, 0.0, 0.0, 0.0)
+                    on_press: root.disconnect()
+                    size_hint_y: 1
+                Button:
+                    id: User4
+                    background_color: (0.0, 0.0, 0.0, 0.0)
+                    on_press: root.disconnect()
+                    size_hint_y: 1
+                Button:
+                    id: User5
+                    background_color: (0.0, 0.0, 0.0, 0.0)
+                    on_press: root.disconnect()
+                    size_hint_y: 1
+                Button:
+                    id: User6
+                    background_color: (0.0, 0.0, 0.0, 0.0)
+                    on_press: root.disconnect()
+                    size_hint_y: 1
+                Button:
+                    id: User7
+                    background_color: (0.0, 0.0, 0.0, 0.0)
+                    on_press: root.disconnect()
+                    size_hint_y: 1
+                Button:
+                    id: User8
+                    background_color: (0.0, 0.0, 0.0, 0.0)
+                    on_press: root.disconnect()
+                    size_hint_y: 1
+                Button:
+                    id: User9
+                    background_color: (0.0, 0.0, 0.0, 0.0)
+                    on_press: root.disconnect()
+                    size_hint_y: 1
+        BoxLayout:
+            size_hint_y: 10
+            TextInput:
+                id: message
+                auto_ident: True
+                size_hint_x: 8
+            Button:
+                text: "Enviar"
+                size_hint_x: 2
+                on_press: root.send()

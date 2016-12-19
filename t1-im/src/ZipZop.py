@@ -4,8 +4,6 @@ from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.screenmanager import ScreenManager, Screen, SlideTransition
 from kivy.config import Config
 import client
-import server
-import message
 from time import *
 
 client = client.Client()
@@ -14,7 +12,7 @@ PORT = 8003
 aux = 1
 
 class Login(Screen):
-    # Configurando tamonha da tela de login
+    # Configuring login screen size
     Config.set('graphics', 'resizable', '0')
     Config.set('graphics', 'width', '800')
     Config.set('graphics', 'height', '600')
@@ -57,7 +55,7 @@ class Connected(Screen):
         self.ids['message'].text = ""
         sleep(1)
         global client
-        self.ids['log'].text = client.rcv_list[0]
+        #self.ids['log'].text = client.rcv_list[0][1]
 
 class ZipZop(App):
     def build(self):

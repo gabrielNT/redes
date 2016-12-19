@@ -15,7 +15,7 @@ class Message:
         self._sender = sender
 
     def getSender(self):
-        return self._Sender
+        return self._sender
 
     def getMessage(self):
         return self._message
@@ -24,5 +24,5 @@ class Message:
         self._message = message
 
     receiver = property(getReceiver, setReceiver)
-    sender = property(setSender, setSender)
+    sender = property(getSender, setSender)
     message = property(getMessage, setMessage)

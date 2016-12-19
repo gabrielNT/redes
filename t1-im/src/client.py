@@ -3,11 +3,9 @@ import socket
 import select
 import threading
 import cPickle as pickle
-import json
 from message import Message
 
 RCV_BUFFER_SIZE = 4096
-CLIENT_RECEIVER = "NOT085NOME"
 
 class Client:
     def __init__(self):
@@ -40,9 +38,6 @@ class Client:
         new_message = Message(receiver, self.username, message)
         self.msg_list.append(new_message)
 
-    def request_user_list(self):
-        send_message(CLIENT_RECEIVER, 0)
-
     def getRcvList(self):
         return self.rcv_list
 
@@ -64,10 +59,21 @@ def recv_msg_thread(sock, client):
         while True:
             read_list, _, _ = select.select([sock], [], [])
             for read_item in read_list:
-                data = sock.recv(RCV_BUFFER_SIZE)
-                print "Receiving Message"
+
+                data = read_item.recv(RCV_BUFFER_SIZE)
                 if data:
-                    client.rcv_list.append(data)
+                    # Operation 0 = send message
+                    if data[0] == '0':
+                        print "Receiving Message" + data[1:]
+                        client.rcv_list.append(data[1:])
+                    # Operation 1 = update user_list
+                    elif data[0] == '1':
+                        print "Receiving user_list"
+                        client.user_list = []
+                        client.user_list.append(data[1:])
+                    else:
+                        print "Operation not recognized."
+                        continue
                 else:
                     print 'Disconnected from the server'
                     sys.exit()
