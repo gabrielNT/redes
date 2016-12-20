@@ -38,6 +38,7 @@ class Server:
                 self.broadcast_user_list(server_socket)
                 i_counter = 0
 
+            # Check all readable sockets
             for sock in readable_sockets:
                 # If the readable socket is the server_socket itself, it must be trying to
                 # open a new connection
@@ -54,6 +55,7 @@ class Server:
                             SOCKET_LIST.append(new_socket)
                             print "User " + new_user.name + " on (%s, %s) connected" % new_socket_address
                             self.broadcast_user_list(server_socket)
+                        # Username not valid, send error code to client
                         else:
                             if self.check_username(username) == 0:
                                 print "Username not alphanumeric " + username
@@ -68,11 +70,14 @@ class Server:
                         new_socket.close()
                 else:
                    try:
+                        # If the socket isnt the server itself, it should be a message
                         serial_msg = sock.recv(RCV_BUFFER_SIZE)
                         if serial_msg:
+                            # Unmarshalling and casting
                             msg = pickle.loads(serial_msg)
                             self.cast(msg, server_socket)
                         else:
+                            # If data isnt valid, close socket
                             sock.close()
                             SOCKET_LIST.remove(sock)
                             for user_to_delete in self.user_list:
@@ -86,11 +91,13 @@ class Server:
     def cast(self, msg, server_socket):
         receiver_counter = 0
 
+        # Send the message to all receivers specified
         for receiver in msg.receiver:
             for user in self.user_list:
                 if receiver == user.name:
                     receiver_counter += 1
                     try:
+                        # Send the message already formatted
                         data = "0[" + msg.sender + "]" + msg.message
                         print "Sending message " + data
                         user.socket.send(data)
@@ -102,6 +109,7 @@ class Server:
                         print "User " + user.name + " disconnected"
                         self.broadcast_user_list(server_socket)
 
+        # Check if one of the receiver doesnt exist
         if receiver_counter != len(msg.receiver):
             print "Only " + str(receiver_counter) + " of " + str(len(msg.receiver)) + "was found"
 

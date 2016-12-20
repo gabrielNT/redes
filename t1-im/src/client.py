@@ -26,6 +26,7 @@ class Client:
             client_socket.connect((host_address, port))
             client_socket.send(username)
             code = client_socket.recv(RCV_BUFFER_SIZE)
+            # Check if the server return some type of error and closes connection if necessary
             if code == "2":
                 print 'Username not alphanumeric'
                 sys.exit()
@@ -43,6 +44,7 @@ class Client:
         threading.Thread(target=send_msg_thread, args=[client_socket, username, self]).start()
         threading.Thread(target=recv_msg_thread, args=[client_socket, self]).start()
 
+    # Used by the front end to add in the msg queue
     def send_message(self, receiver, message):
         new_message = Message(receiver, self.username, message)
         self.msg_list.append(new_message)
@@ -62,7 +64,9 @@ class Client:
     user_list = property(getUserList, setUserList)
     rcv_list = property(getRcvList, setRcvList)
 
+# Thread to send messages
 def send_msg_thread(sock, username, client):
+        # Send the serialized data (using a Message object)
         while True:
             if len(client.msg_list):
                 for msg in client.msg_list:
@@ -71,8 +75,10 @@ def send_msg_thread(sock, username, client):
                     sock.send(serial_msg)
                     client.msg_list.remove(msg)
 
+# Thread to receive messages
 def recv_msg_thread(sock, client):
         while True:
+            # Check all readable sockets
             read_list, _, _ = select.select([sock], [], [])
             for read_item in read_list:
 
