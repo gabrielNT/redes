@@ -1,16 +1,15 @@
 from kivy.app import App
-from kivy.uix.button import Button
-from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.screenmanager import ScreenManager, Screen, SlideTransition
 from kivy.config import Config
-import client
-import kivy.clock
+from kivy.clock import Clock
+from functools import partial
 from time import *
+import client
 import os
+
 client = client.Client()
 HOST_ADDRESS = "localhost"
 PORT = 8003
-aux = 1
 username = ""
 receiver = ""
 
@@ -41,22 +40,42 @@ class Login(Screen):
 class Connected(Screen):
     global aux
     def newConnection(self,loginTxt):
-        clock.schedule_interval(rcv_msg,0.5)
-        if aux < 9 :
-            current_user = "User"+str(aux)
-            self.ids[current_user].text = loginTxt
-            self.ids[current_user].background_color = 1.0,1.0,1.0,1.0
-            global aux
-            aux += 1
+        Clock.schedule_interval(self.rcv_msg,0.5)
+        Clock.schedule_interval(self.update_text, 0.4)
 
-    def rcv_msg(self):
+    def update_text(self, dt):
+        global receiver
+        if receiver != '':
+            filename = os.getcwd() + "/logs/" + username + ";" + receiver
+            log = open(filename, 'r')
+            text = log.read()
+            self.ids['log'].text = text
+
+
+    def rcv_msg(self, dt):
+        aux = 1
+        while aux < 9:
+            current_user = "User" + str(aux)
+            self.ids[current_user].text = ""
+            self.ids[current_user].background_color = 0.0, 0.0, 0.0, 0.0
+            aux += 1
+        aux = 1
+        for j in client.user_list:
+            if j != "" and j != username:
+                current_user = "User" + str(aux)
+                self.ids[current_user].text = j
+                if j == receiver:
+                    self.ids[current_user].background_color = 1.0, 1.0, 1.0, 1.0
+                aux += 1
+
         global client
-        if len(client.recv_list):
-            for i in client.recv_list:
+        if len(client.rcv_list):
+            while len(client.rcv_list):
+                i = client.rcv_list[0]
                 i += "\n"
                 dir_path = os.getcwd()
                 global username
-                filename = dir_path+username+";"
+                filename = dir_path + "/logs/" + username + ";"
                 target = i[1]
                 counter = 2
                 while i[counter] != "]":
@@ -66,7 +85,7 @@ class Connected(Screen):
                 log = open(filename,'a')
                 log.write(i)
                 log.close()
-                #  printa na tela
+                client.rcv_list.pop(0)
 
     def disconnect(self):
         self.manager.transition = SlideTransition(direction="right")
@@ -74,21 +93,27 @@ class Connected(Screen):
         self.manager.get_screen('login').resetScreen()
 
     def send(self):
+        global username
         message = self.ids['message'].text
+        log_message = "[" + username + "]" + message + "\n"
         global receiver
-        receiver
         global client
         client.send_message([receiver], message)
         self.ids['message'].text = ""
-        sleep(1)
-        dir_path = os.getcwd()
+        #sleep(1)
+        #TODO: Windows version
+        dir_path = os.getcwd() + "/logs/"
         filename = dir_path+username+";"+receiver
         log = open(filename,'a')
-        message += "\n"
-        log.write(message)
+        log.write(log_message)
         log.close()
         global client
         #self.ids['log'].text = client.rcv_list[0][1]
+
+    def button_pressed(self, label):
+        if self.ids[label].text:
+            global receiver
+            receiver = self.ids[label].text
 
 class ZipZop(App):
     def build(self):

@@ -32,6 +32,8 @@ class Client:
             elif code == "3":
                 print 'Username already in use'
                 sys.exit()
+            elif code == "4":
+                sys.exit()
         except:
             print 'Unable to establish connection'
             sys.exit()
@@ -82,12 +84,10 @@ def recv_msg_thread(sock, client):
                         client.rcv_list.append(data[1:])
                     # Operation 1 = update user_list
                     elif data[0] == '1':
-                        print "Receiving user_list"
+                        #print "Receiving user_list"
                         client.user_list = []
                         temp_string = data[1:]
                         client.user_list = temp_string.split(",")
-                        for i in client.user_list:
-                            print i
                     else:
                         print "Operation not recognized."
                         continue

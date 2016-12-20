@@ -46,20 +46,25 @@ class Server:
                     username = new_socket.recv(RCV_BUFFER_SIZE)
 
                     # Check if username is valid
-                    if self.check_username(username) == 1:
-                        # Create a new user and put the data in the lists
-                        new_user = User(username, new_socket)
-                        self.user_list.append(new_user)
-                        SOCKET_LIST.append(new_socket)
-                        print "User " + new_user.name + " on (%s, %s) connected" % new_socket_address
-                        self.broadcast_user_list(server_socket)
-                    else:
-                        if self.check_username(username) == 0:
-                            print "Username not alphanumeric " + username
-                            new_socket.send("2")
+                    if len(self.user_list) <= 8:
+                        if self.check_username(username) == 1:
+                            # Create a new user and put the data in the lists
+                            new_user = User(username, new_socket)
+                            self.user_list.append(new_user)
+                            SOCKET_LIST.append(new_socket)
+                            print "User " + new_user.name + " on (%s, %s) connected" % new_socket_address
+                            self.broadcast_user_list(server_socket)
                         else:
-                            print "Username already in use: " + username
-                            new_socket.send("3")
+                            if self.check_username(username) == 0:
+                                print "Username not alphanumeric " + username
+                                new_socket.send("2")
+                            else:
+                                print "Username already in use: " + username
+                                new_socket.send("3")
+                            new_socket.close()
+                    else:
+                        print "Max number of simultaneous users reached"
+                        new_socket.send("4")
                         new_socket.close()
                 else:
                    try:
