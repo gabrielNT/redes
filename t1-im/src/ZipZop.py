@@ -38,7 +38,7 @@ class Login(Screen):
         self.ids['login'].text = ""
 
 class Connected(Screen):
-    global aux
+    notification_list = []
     def newConnection(self,loginTxt):
         Clock.schedule_interval(self.rcv_msg,0.5)
         Clock.schedule_interval(self.update_text, 0.4)
@@ -66,6 +66,10 @@ class Connected(Screen):
                 self.ids[current_user].text = j
                 if j == receiver:
                     self.ids[current_user].background_color = 1.0, 1.0, 1.0, 1.0
+                while len(notification_list):
+                    if j == notification_list[0]
+                        self.ids[current_user].background_color = 0.0, 1.0, 1.0, 0.0
+                        notification_list.pop(0)
                 aux += 1
 
         global client
@@ -85,6 +89,9 @@ class Connected(Screen):
                 log = open(filename,'a')
                 log.write(i)
                 log.close()
+                global receiver
+                if target != receiver and target not in notification_list:
+                    notification_list.append(target)
                 client.rcv_list.pop(0)
 
     def disconnect(self):
