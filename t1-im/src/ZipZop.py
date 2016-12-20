@@ -4,11 +4,12 @@ from kivy.config import Config
 from kivy.clock import Clock
 from functools import partial
 from time import *
+import sys
 import client
 import os
 
 client = client.Client()
-HOST_ADDRESS = "localhost"
+HOST_ADDRESS = "104.196.39.110"
 PORT = 8003
 username = ""
 receiver = ""
@@ -39,17 +40,22 @@ class Login(Screen):
 
 class Connected(Screen):
     notification_list = []
+
     def newConnection(self,loginTxt):
         Clock.schedule_interval(self.rcv_msg,0.5)
         Clock.schedule_interval(self.update_text, 0.4)
 
     def update_text(self, dt):
         global receiver
-        if receiver != '':
-            filename = os.getcwd() + "/logs/" + username + ";" + receiver
-            log = open(filename, 'r')
-            text = log.read()
-            self.ids['log'].text = text
+        try:
+            if receiver != '':
+                filename = os.getcwd() + "/logs/" + username + ";" + receiver
+                log = open(filename, 'r')
+                text = log.read()
+                self.ids['log'].text = ""
+                self.ids['log'].text = text
+        except:
+            self.ids['log'].text = "Envie sua mensagem!"
 
 
     def rcv_msg(self, dt):
@@ -61,15 +67,21 @@ class Connected(Screen):
             aux += 1
         aux = 1
         for j in client.user_list:
+            counter = 0
             if j != "" and j != username:
                 current_user = "User" + str(aux)
                 self.ids[current_user].text = j
+                while len(self.notification_list) > counter:
+                    if j == self.notification_list[counter]:
+                        self.ids[current_user].background_color = 1.0, 0.0, 0.0, 1.0
+                    counter += 1
+
                 if j == receiver:
+                    try:
+                        self.notification_list.remove(j)
+                    except:
+                        pass
                     self.ids[current_user].background_color = 1.0, 1.0, 1.0, 1.0
-                while len(notification_list):
-                    if j == notification_list[0]
-                        self.ids[current_user].background_color = 0.0, 1.0, 1.0, 0.0
-                        notification_list.pop(0)
                 aux += 1
 
         global client
@@ -90,14 +102,13 @@ class Connected(Screen):
                 log.write(i)
                 log.close()
                 global receiver
-                if target != receiver and target not in notification_list:
-                    notification_list.append(target)
+                if target != receiver and target not in self.notification_list:
+                    self.notification_list.append(target)
+                    print target + str(len(self.notification_list))
                 client.rcv_list.pop(0)
 
     def disconnect(self):
-        self.manager.transition = SlideTransition(direction="right")
-        self.manager.current = 'login'
-        self.manager.get_screen('login').resetScreen()
+        sys.exit()
 
     def send(self):
         global username
