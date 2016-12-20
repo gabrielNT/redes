@@ -49,7 +49,10 @@ class Connected(Screen):
         global receiver
         try:
             if receiver != '':
-                filename = os.getcwd() + "/logs/" + username + ";" + receiver
+                if sys.platform.startswith('win32'):
+                    filename = os.path.dirname(os.path.realpath(__file__)) + "\\logs\\" + username + ";" + receiver
+                elif sys.platform.startswith('linux'):
+                    filename = dir_path + "/logs/" + username + ";" + receiver
                 log = open(filename, 'r')
                 text = log.read()
                 self.ids['log'].text = ""
@@ -91,7 +94,10 @@ class Connected(Screen):
                 i += "\n"
                 dir_path = os.getcwd()
                 global username
-                filename = dir_path + "/logs/" + username + ";"
+                if sys.platform.startswith('win32'):
+                    filename = os.path.dirname(os.path.realpath(__file__)) + "\\logs\\" + username + ";"
+                elif sys.platform.startswith('linux'):
+                    filename = dir_path + "/logs/" + username + ";"
                 target = i[1]
                 counter = 2
                 while i[counter] != "]":
@@ -120,7 +126,11 @@ class Connected(Screen):
         self.ids['message'].text = ""
         #sleep(1)
         #TODO: Windows version
-        dir_path = os.getcwd() + "/logs/"
+        if sys.platform.startswith('win32'):
+            dir_path = os.path.dirname(os.path.realpath(__file__)) + "\\logs\\"
+        elif sys.platform.startswith('linux'):
+            dir_path = os.getcwd() + "/logs/"
+
         filename = dir_path+username+";"+receiver
         log = open(filename,'a')
         log.write(log_message)
